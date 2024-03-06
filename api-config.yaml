@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+data:
+  OPA_URL: 'http://127.0.0.1:53957/v1/data/jwt/allow'
+  DB_HOST: '127.0.0.1:53853'
+  DB_NAME: 'swiss'
+  DB_USER: 'root'
