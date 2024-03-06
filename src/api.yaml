@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+      name: api
+    spec:
+      containers:
+      - name: api
+        image: ashokrajume/api-opa:mac
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 5000
+        env:
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secret
+              key: JWT_SECRET_KEY
+        - name: OPA_URL
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: OPA_URL
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  type: NodePort
+  selector:
+    app: api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
