@@ -11,9 +11,9 @@ spec:
       {{- include "helm-api-opa.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      name: {{ include "helm-api-opa.fullname" . }}
       labels:
         {{- include "helm-api-opa.labels" . | nindent 8 }}
-      name: {{ include "helm-api-opa.fullname" . }}
     spec:
       containers:
       - name: {{ include "helm-api-opa.fullname" . }}
@@ -47,7 +47,7 @@ metadata:
 spec:
   type: {{ .Values.apiImage.type }}
   selector:
-    {{- include "helm-api-opa.selectorLabels" . | nindent 6 }}
+    {{- include "helm-api-opa.selectorLabels" . | nindent 4 }}
   ports:
     - name: http
       protocol: TCP

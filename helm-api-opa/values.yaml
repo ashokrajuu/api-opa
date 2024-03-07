@@ -9,8 +9,8 @@ apiImage:
   targetPort: 5000
 
 apiConfig:
-  configName: api-config
-  secretName: api-secret
+  configName: helm-api-opa-release-config
+  secretName: helm-api-opa-release-secret
   OPA_URL: 'http://opa.default.svc.cluster.local:8181/v1/data/jwt/allow'
   INITIAL_USERNAME: 'admin'
   INITIAL_EMAIL: 'admin@email.com'

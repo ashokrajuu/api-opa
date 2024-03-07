@@ -1,4 +1,10 @@
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: opa-jwt
+  labels:
+    app: {{ .Values.opa.name }}
 data:
   jwt.rego: "package jwt\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n\tclaims.role
     == \"admin\"\n\tinput.method == \"POST\"\n}\n\nallow if {\n\tinput.method == \"GET\"\n\tinput.path
@@ -7,9 +13,4 @@ data:
     payload, _] := io.jwt.decode(bearer_token)\n}\n\nbearer_token := t if {\n\tv :=
     input.jwt_token\n\tstartswith(v, \"Bearer \")\n\tt := substring(v, count(\"Bearer
     \"), -1)\n}\n"
-kind: ConfigMap
-metadata:
-  creationTimestamp: null
-  name: opa-jwt
-  labels:
-    app: {{ .Values.opa.name }}
+
