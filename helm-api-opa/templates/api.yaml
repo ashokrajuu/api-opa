@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: {{ include "helm-api-opa.fullname" . }}
   labels:
-    app: {{- include "helm-api-opa.labels" . | nindent 4 }}
+    {{- include "helm-api-opa.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{- include "helm-api-opa.selectorLabels" . | nindent 6 }}
+      {{- include "helm-api-opa.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: {{- include "helm-api-opa.labels" . | nindent 6 }}
+        {{- include "helm-api-opa.labels" . | nindent 8 }}
       name: {{ include "helm-api-opa.fullname" . }}
     spec:
       containers:
@@ -43,11 +43,11 @@ apiVersion: v1
 metadata:
   name: {{ include "helm-api-opa.fullname" . }}
   labels:
-    app: {{- include "helm-api-opa.labels" . | nindent 4 }}
+    {{- include "helm-api-opa.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.apiImage.type }}
   selector:
-    app: {{- include "helm-api-opa.selectorLabels" . | nindent 6 }}
+    {{- include "helm-api-opa.selectorLabels" . | nindent 6 }}
   ports:
     - name: http
       protocol: TCP
