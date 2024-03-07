@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+data:
+  OPA_URL: 'http://opa.default.svc.cluster.local:8181/v1/data/jwt/allow'
+  INITIAL_USERNAME: 'admin'
+  INITIAL_EMAIL: 'admin@email.com'
+  INITIAL_ROLE: 'admin'
+

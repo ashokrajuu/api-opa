@@ -6,6 +6,8 @@ import requests
 from functools import wraps
 import os
 
+#Flask Configuration
+
 app = Flask(__name__)
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
 OPA_URL = os.environ.get('OPA_URL')
@@ -16,7 +18,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
 
-
+#OPA validation function and this is invoked by decorator
 def authorize_request(method, path, jwt_token, JWT_SECRET_KEY, authenticated):
     print(method, path, jwt_token, JWT_SECRET_KEY, authenticated)
 
@@ -41,7 +43,7 @@ def authorize_request(method, path, jwt_token, JWT_SECRET_KEY, authenticated):
         # Handle OPA service error
         return False
 
-
+#Decorator for OPA
 def authorize(method, path):
     def decorator(func):
         @wraps(func)
@@ -74,6 +76,7 @@ def authorize(method, path):
     return decorator
 
 
+# Local DB Initialization
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -85,8 +88,17 @@ class User(db.Model):
 # Create the database tables (run this once before starting the app)
 with app.app_context():
     db.create_all()
+    admin_user = User.query.filter_by(username='admin').first()
+    if admin_user is None:
+        # Create a new User instance with the provided values
+        admin_user = User(username=os.environ.get('INITIAL_USERNAME'), email=os.environ.get('INITIAL_EMAIL'), password=os.environ.get('INITIAL_PASSWORD'), role=os.environ.get('INITIAL_ROLE'))
+        db.session.add(admin_user)
+        db.session.commit()
+    users = User.query.all()
+    user_list = [{'id': user.id, 'username': user.username, 'email': user.email, 'role': user.role} for user in users]
+    print(user_list)
 
-
+# Login function which allows all traffic
 @app.route('/login', methods=['POST'])
 def login():
     if not request.is_json:
@@ -107,7 +119,7 @@ def login():
     else:
         return jsonify({"msg": "Invalid username or password"}), 401
 
-
+# Create user function which allows only Admin Role authorized by OPA
 @app.route('/create', methods=['POST'])
 @jwt_required()
 @authorize("POST", "/create")
@@ -138,11 +150,11 @@ def register():
         db.session.rollback()
         return jsonify({"msg": "Username already exists"}), 400
 
-
+# Create user function which allows if you are authenticated and authorized by OPA
 @app.route('/view', methods=['GET'])
 @jwt_required()
 @authorize("GET", "/view")
-def protected():
+def view():
     current_user = get_jwt_identity()
 
     users = User.query.all()

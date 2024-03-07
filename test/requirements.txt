@@ -3,3 +3,4 @@ flask-jwt-extended
 flask-sqlalchemy
 requests
 sqlalchemy
+mysqlclient
