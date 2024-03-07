@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helm-api-opa.fullname" . }}
+  labels:
+    {{- include "helm-api-opa.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "helm-api-opa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      name: {{ include "helm-api-opa.fullname" . }}
+      labels:
+        {{- include "helm-api-opa.labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ include "helm-api-opa.fullname" . }}
+        image: {{ .Values.apiImage.repository }}
+        imagePullPolicy: {{ .Values.apiImage.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.apiImage.containerPort }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.apiConfig.configName }}
+        env:
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.apiConfig.secretName }}
+              key: JWT_SECRET_KEY
+        - name: INITIAL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.apiConfig.secretName }}
+              key: INITIAL_PASSWORD
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "helm-api-opa.fullname" . }}
+  labels:
+    {{- include "helm-api-opa.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.apiImage.type }}
+  selector:
+    {{- include "helm-api-opa.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.apiImage.port }}
+      targetPort: {{ .Values.apiImage.targetPort }}

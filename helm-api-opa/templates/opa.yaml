@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.opa.name }}
+  labels:
+    app: {{ .Values.opa.name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.opa.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.opa.name }}
+      name: {{ .Values.opa.name }}
+    spec:
+      containers:
+      - name: {{ .Values.opa.name }}
+        image: {{ .Values.opa.repository }}
+        imagePullPolicy: {{ .Values.opa.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.opa.containerPort }}
+        args:
+        - "run"
+        - "--ignore=.*"
+        - "--server"
+        - "/policies"
+        volumeMounts:
+        - readOnly: true
+          mountPath: /policies
+          name: opa-jwt-policy
+      volumes:
+      - name: opa-jwt-policy
+        configMap:
+          name: {{ .Values.opaConfig.configMap }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.opa.name }}
+  labels:
+    app: {{ .Values.opa.name }}
+spec:
+  type: {{ .Values.opa.type }}
+  selector:
+    app: {{ .Values.opa.name }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.opa.port }}
+      targetPort: {{ .Values.opa.targetPort }}

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "helm-api-opa.fullname" . }}-config
+data:
+  OPA_URL: {{ .Values.apiConfig.OPA_URL }}
+  INITIAL_USERNAME: {{ .Values.apiConfig.INITIAL_USERNAME }}
+  INITIAL_EMAIL: {{ .Values.apiConfig.INITIAL_EMAIL }}
+  INITIAL_ROLE: {{ .Values.apiConfig.INITIAL_ROLE }}
+
