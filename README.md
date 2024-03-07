@@ -93,7 +93,13 @@ If normal users try to access create user api, ends up in Unauthorized error
 Api Docker Repo: https://hub.docker.com/repository/docker/ashokrajume/api-opa/general
 
 
-### Kubernetes
+### Install using Kubernetes
+
+If you dont need customizatiom, simply run
+
+```
+kubectl create -f deployment.yaml
+```
 
 **Variable Configuration:**
 
@@ -159,4 +165,21 @@ Please modify print statement accordingly in 'src/api/api.py' and create a new i
 > kubectl logs opa-pod-name
 
 ![image](https://github.com/ashokrajuu/api-opa/assets/24654074/aae993c7-9c2a-4b9e-bcd0-471e2e313062)
+
+
+### Install using Helm
+
+Validate template,
+
+```
+helm template helm-api-opa -f helm-api-opa/values.yaml
+```
+Install using Helm Chart,
+```
+helm install helm-api-opa-release helm-api-opa
+```
+upgrade,
+```
+helm upgrade helm-api-opa-release helm-api-opa
+```
 
