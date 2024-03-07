@@ -1,0 +1,32 @@
+replicaCount: 1
+
+apiImage:
+  repository: ashokrajume/api-opa:arm
+  pullPolicy: IfNotPresent
+  containerPort: 5000
+  type: NodePort
+  port: 5000
+  targetPort: 5000
+
+apiConfig:
+  configName: api-config
+  secretName: api-secret
+  OPA_URL: 'http://opa.default.svc.cluster.local:8181/v1/data/jwt/allow'
+  INITIAL_USERNAME: 'admin'
+  INITIAL_EMAIL: 'admin@email.com'
+  INITIAL_ROLE: 'admin'
+  JWT_SECRET_KEY: 'eWRzdmRzdjUxNDU0NmRmCg==' #encoded value
+  INITIAL_PASSWORD: 'YWRtaW4=' #encoded value
+
+
+opa:
+  name: opa
+  containerPort: 8181
+  repository: openpolicyagent/opa:edge-static
+  pullPolicy: IfNotPresent
+  type: NodePort
+  port: 8181
+  targetPort: 8181
+
+opaConfig:
+  configMap: opa-jwt
