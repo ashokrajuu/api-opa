@@ -2,31 +2,31 @@
 
 ### Functionality:
 
-- User can login to the app if the user exists
-- Only Admin Role user can create the user and view the user created
-- Only Authenticated user canview the users available
+- Users can log in to the application if the user exists
+- Only Admin Role can create the user and view the available users
+- Only Authenticated user can view the available users
 
 ### Technical Components:
 
-- Flask is used to serve API calls
-- Sqllite DB is used to store the user info
-- JWT provides authentication
-- OPA provides Authorization
+- Flask is used to serve API calls.
+- Sqlite DB is used to store the user information.
+- JWT (Java Web Token)provides Authentication.
+- OPA (Open Policy Agent) provides Authorization
 
 ### Working
 
 - Creates a Flask application instance (app)
 - Initializes and Define the sql(db), jwt and opa config
 - Login function,
-  - Recieves all traffic and only existing users will be allowed
+  - Receives all traffic and only existing users will be allowed
   - JWT token will be generated
-- View function,
+  - View function,
   - JWT token is verified
-  - OPA parses the role from token and authroization decision is taken
-  - Result will be dispalyed
+  - OPA parses the role from token and authorization decision is taken
+  - Result will be displayed
 - Create function,
   - JWT token is verified
-  - OPA parses the role from token and authroization decision is taken
+  - OPA parses the role from token and authorization decision is taken
   - User will be created in DB and indicated in logline
 
 > Docker image will vary based on platform,
@@ -40,13 +40,13 @@
 
 **Login:**
 
-Run the below command to login to the api application,Role will be reatined automatically from DB 
+Run the below command to log in to the api application,Role will be retained automatically from DB 
 
 ```
 curl -X POST -H "Content-Type: application/json" -d '{"username": "admin", "password": "<password>", "email": "admin@email"}' http://127.0.0.1:5000/login
 ```
 
-Store the token generated for further purpose
+Stores the token generated for further purpose.
 
 ![image](https://github.com/ashokrajuu/api-opa/assets/24654074/b92935d3-a9ce-4b38-848b-fa33b0f1a5fc)
 
@@ -81,13 +81,13 @@ curl -X GET -H "Authorization: Bearer <token>" http://127.0.0.1:5000/view
 - Login
 - View User List
 
-If normal users try to access create user api, ends up in Unauthorized error
+If normal users try to access create user API, ends up in Unauthorized error
 ![image](https://github.com/ashokrajuu/api-opa/assets/24654074/4d47eadd-dcef-4e46-9cc0-e47774ad970d)
 
 
 ## Setup
 
-**Pre-Requesites:**
+**Prerequisites**
 
 - Minikube
 - Docker
@@ -98,12 +98,12 @@ Api Docker Repo: https://hub.docker.com/repository/docker/ashokrajume/api-opa/ge
 
 ### Install using Kubernetes
 
-If you dont need customizatiom, simply run
+If you don't need customization, simply run
 
 ```
 kubectl create -f deployment.yaml
 
-kubectl port-forward service/helm-api-opa-release 5000:5000
+kubectl port-forward service/release-name-helm-api-opa 5000:5000
 
 curl http://127.0.0.1:5000
 ```
@@ -114,7 +114,7 @@ curl http://127.0.0.1:5000
 
 -  api-config: Values of OPA URL (resolves using service DNS in macOS and for Linux expose the service & modify the url), Admin user info(created during initialization)
 -  api-secret: JWT Secret token and Admin user password (encoded)
--  opa-policy: Allow and Deny policy based on role 
+-  opa-policy: Allow and Deny policy based on role, Check `src\config\jwt.rego` 
 
 
 **Running the application:**
@@ -163,8 +163,8 @@ This will return 404 html response,as there are no api for path "/"
 
 ![image](https://github.com/ashokrajuu/api-opa/assets/24654074/6ae66357-094d-4948-8ad3-b1e507c530ea)
 
-Testing purpose, I'm printing some sensitive info logs.
-Please modify print statement accordingly in 'src/api/api.py' and create a new image with the Dockerfile provided
+For testing purpose, I'm printing some sensitive info logs.
+Please modify the print statement accordingly in 'src/api/api.py' and create a new image with the Dockerfile provided
 
 
 **Logs of OPA:**
@@ -184,6 +184,9 @@ helm template helm-api-opa -f helm-api-opa/values.yaml
 Install using Helm Chart,
 ```
 helm install helm-api-opa-release helm-api-opa
+```
+```
+kubectl port-forward service/helm-api-opa-release 5000:5000
 ```
 upgrade,
 ```
