@@ -88,14 +88,75 @@ If normal users try to access create user api, ends up in Unauthorized error
 
 - Minikube
 - Docker
+- kubectl
 
 Api Docker Repo: https://hub.docker.com/repository/docker/ashokrajume/api-opa/general
 
+
+### Kubernetes
+
 **Variable Configuration:**
+
+`K8's` folder has config files (Modify accordingly)
+
+-  api-config: Values of OPA URL (resolves using service DNS in macOS and for Linux expose the service & modify the url), Admin user info(created during initialization)
+-  api-secret: JWT Secret token and Admin user password (encoded)
+-  opa-policy: Allow and Deny policy based on role 
 
 
 **Running the application:**
 
+Create configs and secrets,
+```
+kubectl create -f api-config.yaml
+kubectl create -f api-secret.yaml
+kubectl create -f opa-policy.yaml
+```
+
+Create OPA server and service,
+```
+kubectl create -f opa.yaml
+```
+Create (Flask)API server and service,
+```
+kubectl create -f api.yaml
+```
+
+Next,
+
+Check whether pods are in running state,
+
+```
+kubectl get pods
+```
+
+Port-forward the API service,
+
+```
+kubectl port-forward service/api 5000:5000
+```
+
+**Testing:**
+
+Using 'curl',
+
+> curl http://127.0.0.1:5000
+
+This will return 404 html response,as there are no api for path "/"
+
+**Logs of API:**
+
+> kubectl logs api-pod-name
+
+![image](https://github.com/ashokrajuu/api-opa/assets/24654074/6ae66357-094d-4948-8ad3-b1e507c530ea)
+
+Testing purpose, I'm printing some sensitive info logs.
+Please modify print statement accordingly in 'src/api/api.py' and create a new image with the Dockerfile provided
 
 
+**Logs of OPA:**
+
+> kubectl logs opa-pod-name
+
+![image](https://github.com/ashokrajuu/api-opa/assets/24654074/aae993c7-9c2a-4b9e-bcd0-471e2e313062)
 
