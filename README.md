@@ -29,11 +29,14 @@
   - OPA parses the role from token and authroization decision is taken
   - User will be created in DB and indicated in logline
 
+> Docker image will vary based on platform,
+> If linux(amdx64x86), OPA Image: openpolicyagent/opa:edge-rootless and API Image: ashokrajume/api-opa:linux
+> if Mac(arm),OPA Image: openpolicyagent/opa:edge-static and API Image: ashokrajume/api-opa:arm 
 
 ## Usage:
 
 > Note: While Launching the Application Admin user will be created and config can be controlled via <helm>
-> Replace other values accordingly, Explaination purpose using dummy values
+> Replace other values accordingly, Explanation purpose using dummy values
 
 **Login:**
 
@@ -99,6 +102,10 @@ If you dont need customizatiom, simply run
 
 ```
 kubectl create -f deployment.yaml
+
+kubectl port-forward service/helm-api-opa-release 5000:5000
+
+curl http://127.0.0.1:5000
 ```
 
 **Variable Configuration:**
@@ -183,3 +190,18 @@ upgrade,
 helm upgrade helm-api-opa-release helm-api-opa
 ```
 
+## Customization
+
+Inside `src` folder, 
+
+api folder has api logic
+config folder has opa policy config (jwt.rego)
+
+Modify the configuration and Recreate the Docker image,
+```
+docker build -t <name>:tag .
+```
+Move image inside the minikube docker by,
+```
+minikube image load <name>:tag 
+```

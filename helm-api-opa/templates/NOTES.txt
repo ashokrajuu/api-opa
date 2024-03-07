@@ -1,1 +1,6 @@
-1. Get the application URL by running these commands:
+Get the application URL by running these commands:
+kubectl port-forward service/helm-api-opa-release 5000:5000
+
+Then, curl http://127.0.0.1:5000/<action>
+
+
