@@ -1,0 +1,330 @@
+---
+# Source: helm-api-opa/templates/api-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: release-name-helm-api-opa-secret
+type: Opaque
+data:
+  JWT_SECRET_KEY: eWRzdmRzdjUxNDU0NmRmCg==
+  INITIAL_PASSWORD: YWRtaW4=
+---
+# Source: helm-api-opa/templates/api-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: release-name-helm-api-opa-config
+data:
+  OPA_URL: http://opa.default.svc.cluster.local:8181/v1/data/jwt/allow
+  INITIAL_USERNAME: admin
+  INITIAL_EMAIL: admin@email.com
+  INITIAL_ROLE: admin
+---
+# Source: helm-api-opa/templates/opa-policy.yaml
+apiVersion: v1
+data:
+  jwt.rego: "package jwt\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n\tclaims.role
+    == \"admin\"\n\tinput.method == \"POST\"\n}\n\nallow if {\n\tinput.method == \"GET\"\n\tinput.path
+    == \"/login\"\n}\n\nallow if {\n\tinput.method == \"GET\"\n\tinput.path == \"/view\"\n\tinput.authenticated\n}\n\nclaims
+    := payload if {\n\tio.jwt.verify_hs256(bearer_token, input.secret_jwt)\n\n\t[_,
+    payload, _] := io.jwt.decode(bearer_token)\n}\n\nbearer_token := t if {\n\tv :=
+    input.jwt_token\n\tstartswith(v, \"Bearer \")\n\tt := substring(v, count(\"Bearer
+    \"), -1)\n}\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: opa-jwt
+  labels:
+    app: opa
+---
+# Source: helm-api-opa/templates/api.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: release-name-helm-api-opa
+  labels:
+    helm.sh/chart: helm-api-opa-0.1.0
+    app.kubernetes.io/name: helm-api-opa
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: NodePort
+  selector:
+      app.kubernetes.io/name: helm-api-opa
+      app.kubernetes.io/instance: release-name
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+---
+# Source: helm-api-opa/templates/opa.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: opa
+  labels:
+    app: opa
+spec:
+  type: NodePort
+  selector:
+    app: opa
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8181
+      targetPort: 8181
+---
+# Source: helm-api-opa/templates/api.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-helm-api-opa
+  labels:
+    helm.sh/chart: helm-api-opa-0.1.0
+    app.kubernetes.io/name: helm-api-opa
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: helm-api-opa
+      app.kubernetes.io/instance: release-name
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: helm-api-opa-0.1.0
+        app.kubernetes.io/name: helm-api-opa
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/version: "1.16.0"
+        app.kubernetes.io/managed-by: Helm
+      name: release-name-helm-api-opa
+    spec:
+      containers:
+      - name: release-name-helm-api-opa
+        image: ashokrajume/api-opa:arm
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: api-config
+        env:
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secret
+              key: JWT_SECRET_KEY
+        - name: INITIAL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: api-secret
+              key: INITIAL_PASSWORD
+---
+# Source: helm-api-opa/templates/opa.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  labels:
+    app: opa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      labels:
+        app: opa
+      name: opa
+    spec:
+      containers:
+      - name: opa
+        image: openpolicyagent/opa:edge-static
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8181
+        args:
+        - "run"
+        - "--ignore=.*"
+        - "--server"
+        - "/policies"
+        volumeMounts:
+        - readOnly: true
+          mountPath: /policies
+          name: opa-jwt-policy
+      volumes:
+      - name: opa-jwt-policy
+        configMap:
+          name: opa-jwt
+---
+# Source: helm-api-opa/templates/api-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: release-name-helm-api-opa-secret
+type: Opaque
+data:
+  JWT_SECRET_KEY: eWRzdmRzdjUxNDU0NmRmCg==
+  INITIAL_PASSWORD: YWRtaW4=
+---
+# Source: helm-api-opa/templates/api-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: release-name-helm-api-opa-config
+data:
+  OPA_URL: http://opa.default.svc.cluster.local:8181/v1/data/jwt/allow
+  INITIAL_USERNAME: admin
+  INITIAL_EMAIL: admin@email.com
+  INITIAL_ROLE: admin
+---
+# Source: helm-api-opa/templates/opa-policy.yaml
+apiVersion: v1
+data:
+  jwt.rego: "package jwt\n\nimport rego.v1\n\ndefault allow := false\n\nallow if {\n\tclaims.role
+    == \"admin\"\n\tinput.method == \"POST\"\n}\n\nallow if {\n\tinput.method == \"GET\"\n\tinput.path
+    == \"/login\"\n}\n\nallow if {\n\tinput.method == \"GET\"\n\tinput.path == \"/view\"\n\tinput.authenticated\n}\n\nclaims
+    := payload if {\n\tio.jwt.verify_hs256(bearer_token, input.secret_jwt)\n\n\t[_,
+    payload, _] := io.jwt.decode(bearer_token)\n}\n\nbearer_token := t if {\n\tv :=
+    input.jwt_token\n\tstartswith(v, \"Bearer \")\n\tt := substring(v, count(\"Bearer
+    \"), -1)\n}\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: opa-jwt
+  labels:
+    app: opa
+---
+# Source: helm-api-opa/templates/api.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: release-name-helm-api-opa
+  labels:
+    helm.sh/chart: helm-api-opa-0.1.0
+    app.kubernetes.io/name: helm-api-opa
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: NodePort
+  selector:
+      app.kubernetes.io/name: helm-api-opa
+      app.kubernetes.io/instance: release-name
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+---
+# Source: helm-api-opa/templates/opa.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: opa
+  labels:
+    app: opa
+spec:
+  type: NodePort
+  selector:
+    app: opa
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8181
+      targetPort: 8181
+---
+# Source: helm-api-opa/templates/api.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-helm-api-opa
+  labels:
+    helm.sh/chart: helm-api-opa-0.1.0
+    app.kubernetes.io/name: helm-api-opa
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: helm-api-opa
+      app.kubernetes.io/instance: release-name
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: helm-api-opa-0.1.0
+        app.kubernetes.io/name: helm-api-opa
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/version: "1.16.0"
+        app.kubernetes.io/managed-by: Helm
+      name: release-name-helm-api-opa
+    spec:
+      containers:
+      - name: release-name-helm-api-opa
+        image: ashokrajume/api-opa:arm
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: api-config
+        env:
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secret
+              key: JWT_SECRET_KEY
+        - name: INITIAL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: api-secret
+              key: INITIAL_PASSWORD
+---
+# Source: helm-api-opa/templates/opa.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  labels:
+    app: opa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      labels:
+        app: opa
+      name: opa
+    spec:
+      containers:
+      - name: opa
+        image: openpolicyagent/opa:edge-static
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8181
+        args:
+        - "run"
+        - "--ignore=.*"
+        - "--server"
+        - "/policies"
+        volumeMounts:
+        - readOnly: true
+          mountPath: /policies
+          name: opa-jwt-policy
+      volumes:
+      - name: opa-jwt-policy
+        configMap:
+          name: opa-jwt
